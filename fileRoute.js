@@ -4,14 +4,9 @@ const path = require('path');
 const multer = require('multer');
 const router = express.Router();
 
-const BASE_DIR = path.resolve(__dirname);
-
 function safeResolve(targetPath) {
-  const resolved = path.resolve(BASE_DIR, targetPath);
-  if (!resolved.startsWith(BASE_DIR)) {
-    throw new Error('Invalid path');
-  }
-  return resolved;
+  if (!targetPath) return '/';
+  return path.resolve('/', targetPath);
 }
 
 const storage = multer.diskStorage({
@@ -35,8 +30,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // 获取路径下的所有文件名称
-router.get('/list', (req, res) => {
-  const targetPath = req.query.path || '';
+router.post('/list', (req, res) => {
+  const targetPath = req.body.path || '';
   try {
     const resolvedPath = safeResolve(targetPath);
     if (!fs.existsSync(resolvedPath)) {
@@ -47,15 +42,17 @@ router.get('/list', (req, res) => {
       return res.status(400).json({ success: false, message: 'Path is not a directory' });
     }
     const files = fs.readdirSync(resolvedPath);
-    res.json({ success: true, data: files });
+    res.json({ success: true, code: 1, data: files });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
 // 删除文件或目录
-router.delete('/delete', (req, res) => {
-  const targetPath = req.query.path || req.body.path;
+router.post('/delete', (req, res) => {
+  const targetPath = req.body.filename
+    ? path.join(req.body.path || '', req.body.filename)
+    : req.body.path;
   if (!targetPath) {
     return res.status(400).json({ success: false, message: 'Path is required' });
   }
@@ -70,7 +67,7 @@ router.delete('/delete', (req, res) => {
     } else {
       fs.unlinkSync(resolvedPath);
     }
-    res.json({ success: true, message: 'Deleted successfully' });
+    res.json({ success: true, code: 1, message: 'Deleted successfully' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -81,7 +78,7 @@ router.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ success: false, message: 'No file uploaded' });
   }
-  res.json({ success: true, message: 'Uploaded successfully', data: req.file.originalname });
+  res.json({ success: true, code: 1, message: 'Uploaded successfully', data: req.file.originalname });
 });
 
 module.exports = router;

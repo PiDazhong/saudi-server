@@ -23,5 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-postbuild.js
 saudi/*
+postbuildService.js

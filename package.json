@@ -3,15 +3,31 @@
   "version": "1.0.0",
   "description": "File management server",
   "main": "app.js",
+  "bin": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "build": "node postbuildService.js",
+    "build:linux": "node postbuildService.js",
+    "build:win": "pkg . --targets node18-win-x64 --out-path=dist",
+    "build:macos": "pkg . --targets node18-macos-x64 --out-path=dist"
+  },
+  "pkg": {
+    "assets": [
+      "fileRoute.js"
+    ],
+    "targets": [
+      "node18-linux-x64"
+    ]
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "pkg": "^5.8.1",
+    "ssh2": "^1.17.0"
   }
 }
