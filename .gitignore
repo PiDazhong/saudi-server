@@ -24,4 +24,3 @@ dist-ssr
 *.sw?
 
 saudi/*
-postbuildService.js

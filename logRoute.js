@@ -4,7 +4,7 @@ const path = require('path');
 const readline = require('readline');
 
 const router = express.Router();
-const LOG_DIR = path.join(__dirname, 'logs');
+const LOG_DIR = process.env.LOG_DIR || path.join(__dirname, 'logs');
 
 function ensureLogDir() {
   if (!fs.existsSync(LOG_DIR)) {
@@ -54,7 +54,7 @@ function getDatesInRange(startDate, endDate) {
 
 // 写入日志
 router.post('/write', (req, res) => {
-  const { action } = req.body;
+  const { action, name, company, phone, email, message } = req.body;
   if (!action) {
     return res.status(400).json({ success: false, message: 'action is required' });
   }
@@ -65,6 +65,14 @@ router.post('/write', (req, res) => {
     device: req.body.device || getDevice(req),
     ip: req.body.ip || getClientIp(req)
   };
+
+  if (action === 'submit') {
+    if (name !== undefined) logEntry.name = name;
+    if (company !== undefined) logEntry.company = company;
+    if (phone !== undefined) logEntry.phone = phone;
+    if (email !== undefined) logEntry.email = email;
+    if (message !== undefined) logEntry.message = message;
+  }
 
   const line = JSON.stringify(logEntry) + '\n';
   const today = new Date();
