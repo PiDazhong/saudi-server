@@ -7,7 +7,7 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "build": "node postbuildService.js",
-    "build:linux": "node postbuildService.js"
+    "commit": "npm run build && git add . && git commit -m \"feat: server开发\" && git push origin main"
   },
   "dependencies": {
     "cors": "^2.8.6",
