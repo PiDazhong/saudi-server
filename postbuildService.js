@@ -21,6 +21,7 @@ const __dirname = path.dirname(__filename);
 const sqlServicePaths = [
   'app.js',
   'checkAuthRoute.js',
+  'codeTableRoute.js',
   'emailRoute.js',
   'fileRoute.js',
   'logRoute.js',

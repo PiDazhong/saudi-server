@@ -4,6 +4,7 @@ const fileRoute = require('./fileRoute');
 const checkAuthRoute = require('./checkAuthRoute');
 const logRoute = require('./logRoute');
 const emailRoute = require('./emailRoute');
+const codeTableRoute = require('./codeTableRoute');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,7 @@ app.use('/saudi-server/files', fileRoute);
 app.use('/saudi-server/checkAuth', checkAuthRoute);
 app.use('/saudi-server/log', logRoute);
 app.use('/saudi-server/sendEmail', emailRoute);
+app.use('/saudi-server/codeTable', codeTableRoute);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
