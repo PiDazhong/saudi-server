@@ -151,5 +151,53 @@ router.post('/query', async (req, res) => {
   res.json({ success: true, code: 1, count: results.length, data: results });
 });
 
+// 删除日志
+router.post('/delete', async (req, res) => {
+  const { timestamp } = req.body;
+  if (!timestamp) {
+    return res.status(400).json({ success: false, code: 0, message: 'timestamp is required' });
+  }
+
+  const dateStr = timestamp.split(' ')[0];
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    return res.status(400).json({ success: false, code: 0, message: 'invalid timestamp format' });
+  }
+
+  const fileName = getLogFileName(dateStr);
+  if (!fs.existsSync(fileName)) {
+    return res.status(404).json({ success: false, code: 0, message: 'log file not found' });
+  }
+
+  const fileStream = fs.createReadStream(fileName);
+  const rl = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+
+  const lines = [];
+  let found = false;
+
+  for await (const line of rl) {
+    if (!line.trim()) {
+      lines.push(line);
+      continue;
+    }
+    try {
+      const entry = JSON.parse(line);
+      if (entry.timestamp === timestamp) {
+        found = true;
+        continue;
+      }
+    } catch {
+      // 保留无法解析的行
+    }
+    lines.push(line);
+  }
+
+  if (!found) {
+    return res.status(404).json({ success: false, code: 0, message: 'log entry not found' });
+  }
+
+  fs.writeFileSync(fileName, lines.map(l => l + '\n').join(''));
+  res.json({ success: true, code: 1, message: 'Deleted successfully' });
+});
+
 module.exports = router;
 module.exports.getClientIp = getClientIp;
