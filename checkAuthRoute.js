@@ -2,19 +2,27 @@ const express = require('express');
 const { readCodeTable } = require('./codeTableRoute');
 const router = express.Router();
 
+function parseArrayValue(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    try {
+      return JSON.parse(value.replace(/'/g, '"'));
+    } catch {
+      return null;
+    }
+  }
+}
+
 function getAuthPasswords() {
   const table = readCodeTable();
   const entry = table['auth_password'];
   if (!entry || entry.value === null || entry.value === undefined) {
     return [];
   }
-  try {
-    const passwords = JSON.parse(entry.value);
-    if (Array.isArray(passwords)) {
-      return passwords;
-    }
-  } catch {
-    // ignore parse error
+  const passwords = parseArrayValue(entry.value);
+  if (Array.isArray(passwords)) {
+    return passwords;
   }
   return [];
 }
