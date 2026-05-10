@@ -124,3 +124,4 @@ router.post('/delete', (req, res) => {
 });
 
 module.exports = router;
+module.exports.readCodeTable = readCodeTable;

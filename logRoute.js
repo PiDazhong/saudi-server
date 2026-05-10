@@ -2,9 +2,28 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const readline = require('readline');
+const { readCodeTable } = require('./codeTableRoute');
 
 const router = express.Router();
 const LOG_DIR = process.env.LOG_DIR || path.join(__dirname, 'logs');
+
+function isBlacklisted(req) {
+  const clientIp = getClientIp(req);
+  const table = readCodeTable();
+  const entry = table['black_ips'];
+  if (!entry || entry.value === null || entry.value === undefined) {
+    return false;
+  }
+  try {
+    const blackList = JSON.parse(entry.value);
+    if (Array.isArray(blackList)) {
+      return blackList.includes(clientIp);
+    }
+  } catch {
+    // ignore parse error
+  }
+  return false;
+}
 
 function ensureLogDir() {
   if (!fs.existsSync(LOG_DIR)) {
@@ -54,6 +73,10 @@ function getDatesInRange(startDate, endDate) {
 
 // 写入日志
 router.post('/write', (req, res) => {
+  if (isBlacklisted(req)) {
+    return res.json({ success: true, code: 1, message: 'in' });
+  }
+
   const { action, name, company, phone, email, message } = req.body;
   if (!action) {
     return res.status(400).json({ success: false, message: 'action is required' });
@@ -129,3 +152,4 @@ router.post('/query', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.getClientIp = getClientIp;

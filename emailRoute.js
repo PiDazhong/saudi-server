@@ -1,7 +1,27 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
+const { readCodeTable } = require('./codeTableRoute');
+const { getClientIp } = require('./logRoute');
 
 const router = express.Router();
+
+function isBlacklisted(req) {
+  const clientIp = getClientIp(req);
+  const table = readCodeTable();
+  const entry = table['black_ips'];
+  if (!entry || entry.value === null || entry.value === undefined) {
+    return false;
+  }
+  try {
+    const blackList = JSON.parse(entry.value);
+    if (Array.isArray(blackList)) {
+      return blackList.includes(clientIp);
+    }
+  } catch {
+    // ignore parse error
+  }
+  return false;
+}
 
 const EMAIL_INFO = {
   user: 'info@saudi-damons.com',
@@ -32,6 +52,10 @@ const transporter = nodemailer.createTransport({
 });
 
 router.post('/', async (req, res) => {
+  if (isBlacklisted(req)) {
+    return res.json({ success: true, code: 1, message: 'in' });
+  }
+
   const { name, company, phone, email, message } = req.body;
 
   if (!name || !phone || !email || !message) {
