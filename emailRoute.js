@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
     return res.json({ success: true, code: 1, message: 'in' });
   }
 
-  const { name, company, phone, email, message } = req.body;
+  const { name, company, phone, email, message, to } = req.body;
 
   if (!name || !phone || !email || !message) {
     return res.status(400).json({
@@ -77,7 +77,7 @@ Time: ${timestamp}`;
 
   const mailOptions = {
     from: EMAIL_INFO.user,
-    to: 'showroom@saudi-damons.com',
+    to: to || 'showroom@saudi-damons.com',
     subject: 'New Inquiry from Web',
     text: mailText
   };
